@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Тренажер множення</title>
+  <meta name="description" content="Тренажер таблиці множення з асоціаціями для дітей">
+  <meta name="theme-color" content="#fff7ec">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✖️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <main class="card" id="app" aria-live="polite">
+
+    <!-- 1. Вхід -->
+    <section class="screen" id="screen-login" hidden>
+      <div class="login">
+        <div class="login__logo" aria-hidden="true">2×3</div>
+        <h1 class="title">Тренажер множення</h1>
+        <p class="muted">Як тебе звати?</p>
+        <form id="login-form" class="stack" autocomplete="off">
+          <input id="login-input" class="field" type="text" maxlength="40" placeholder="Ім'я або ID учня" required>
+          <button class="btn btn--primary btn--block" type="submit">Почати</button>
+        </form>
+        <p class="hint-text">Вже займався на іншому пристрої? Введи свій ID (починається з <code>dev_</code>) — прогрес відновиться.</p>
+      </div>
+    </section>
+
+    <!-- 2. Меню -->
+    <section class="screen" id="screen-menu" hidden>
+      <header class="bar">
+        <div class="user">
+          <span class="user__avatar" id="user-avatar" aria-hidden="true">?</span>
+          <div>
+            <div class="user__name" id="user-name">Учень</div>
+            <div class="user__sync muted" id="sync-status"></div>
+          </div>
+        </div>
+        <div class="bar__actions">
+          <button class="icon-btn" id="btn-stats" type="button" aria-label="Статистика" title="Статистика">📊</button>
+          <button class="icon-btn icon-btn--danger" id="btn-logout" type="button" aria-label="Вийти" title="Вийти">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <h2 class="label">Урок</h2>
+      <div class="lessons" id="lesson-list" role="radiogroup" aria-label="Урок"></div>
+
+      <h2 class="label">Рівень</h2>
+      <div class="modes" id="mode-list" role="radiogroup" aria-label="Рівень"></div>
+
+      <h2 class="label">Відповідь</h2>
+      <div class="segmented" id="input-mode" role="radiogroup" aria-label="Спосіб відповіді">
+        <button type="button" role="radio" data-input="novice">🌱 Вибрати</button>
+        <button type="button" role="radio" data-input="expert">⌨️ Набрати</button>
+      </div>
+
+      <p class="mode-rules muted" id="mode-rules"></p>
+      <button class="btn btn--primary btn--block btn--big" id="btn-start" type="button">Старт</button>
+    </section>
+
+    <!-- 3. Гра -->
+    <section class="screen" id="screen-game" hidden>
+      <header class="bar">
+        <button class="btn btn--ghost btn--small" id="btn-exit" type="button">← Меню</button>
+        <div class="game-title">
+          <div id="game-lesson">Урок</div>
+          <div class="muted" id="game-mode">Рівень</div>
+        </div>
+        <div class="timer" id="game-timer">00:00</div>
+      </header>
+
+      <div class="hud">
+        <div class="pill pill--score">⭐ <b id="game-score">0</b></div>
+        <div class="hearts" id="game-hearts" aria-label="Життя"></div>
+        <div class="progress" id="game-progress">
+          <div class="progress__track"><div class="progress__fill" id="progress-fill"></div></div>
+          <span class="muted" id="progress-text"></span>
+        </div>
+      </div>
+
+      <div class="question" id="question">
+        <div class="text-hint" id="text-hint" hidden></div>
+        <img class="story" id="story" alt="Картинка-історія" hidden>
+        <div class="expr" id="expr"></div>
+      </div>
+
+      <div class="hint-bar" id="hint-bar">
+        <button type="button" class="chip" data-hint="text">💬 Підказка</button>
+        <button type="button" class="chip" data-hint="story">💡 Історія</button>
+        <button type="button" class="chip" data-hint="tiles">🖼️ Картинки</button>
+      </div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="keypad-wrap" id="keypad-wrap" hidden>
+        <div class="keypad" id="keypad">
+          <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+          <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+          <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+          <button type="button" data-key="back" aria-label="Стерти">⌫</button><button type="button" data-key="0">0</button>
+          <button type="button" data-key="ok" class="keypad__ok">OK</button>
+        </div>
+      </div>
+
+      <button class="btn btn--dark btn--block" id="btn-finish" type="button" hidden>Фініш 🏁</button>
+    </section>
+  </main>
+
+  <!-- Результат -->
+  <dialog class="modal" id="dlg-result">
+    <div class="result__icon" id="res-icon">🎉</div>
+    <h2 class="title" id="res-title">Вітаємо!</h2>
+    <p class="muted" id="res-subtitle"></p>
+    <div class="result__score"><span id="res-score">0</span><small>балів</small></div>
+    <dl class="result__grid">
+      <div><dt>Прикладів</dt><dd id="res-questions">0</dd></div>
+      <div><dt>Правильно</dt><dd class="ok" id="res-correct">0</dd></div>
+      <div><dt>Помилок</dt><dd class="bad" id="res-errors">0</dd></div>
+      <div><dt>Підказок</dt><dd class="warn" id="res-hints">0</dd></div>
+      <div><dt>Час</dt><dd id="res-time">00:00</dd></div>
+      <div><dt>Швидкість</dt><dd id="res-speed">0</dd></div>
+    </dl>
+    <div class="result__actions">
+      <button class="btn" id="res-menu" type="button">Меню</button>
+      <button class="btn" id="res-retry" type="button">Ще раз</button>
+      <button class="btn btn--primary" id="res-next" type="button">Далі →</button>
+    </div>
+  </dialog>
+
+  <!-- Статистика -->
+  <dialog class="modal modal--wide" id="dlg-stats">
+    <div class="modal__head">
+      <h2 class="title">📊 Статистика</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Закрити">✕</button>
+    </div>
+    <div class="id-box">
+      <span class="muted">Твій ID для входу на іншому пристрої:</span>
+      <div class="id-row"><code id="stats-id"></code><button class="btn btn--small" type="button" data-copy-id>Копіювати</button></div>
+    </div>
+    <div id="stats-body" class="stats"></div>
+  </dialog>
+
+  <!-- Вихід -->
+  <dialog class="modal" id="dlg-logout">
+    <div class="result__icon">⚠️</div>
+    <h2 class="title">Вийти з акаунта?</h2>
+    <p class="muted">Збережи ID, щоб потім повернутись до свого прогресу:</p>
+    <div class="id-row"><code id="logout-id"></code><button class="btn btn--small" type="button" data-copy-id>Копіювати</button></div>
+    <div class="result__actions result__actions--2">
+      <button class="btn" type="button" data-close>Скасувати</button>
+      <button class="btn btn--danger" id="logout-confirm" type="button">Вийти</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <noscript><p style="text-align:center">Для роботи тренажера потрібен JavaScript.</p></noscript>
+</body>
+</html>
